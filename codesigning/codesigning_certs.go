@@ -11,7 +11,7 @@ import (
 	"github.com/e-n-0/sign-app-cli/utils"
 )
 
-func getCodesigningCerts() ([]string, error) {
+func GetCodesigningCerts() ([]string, error) {
 	var output []string
 	bytes, status, err := utils.ExecuteProcess([]string{"/usr/bin/security", "find-identity", "-v", "-p", "codesigning"})
 	if err != nil || status != 0 {
@@ -29,7 +29,7 @@ func getCodesigningCerts() ([]string, error) {
 	return output, nil
 }
 
-func printCodesigningCerts(certs []string) {
+func PrintCodesigningCerts(certs []string) {
 	if len(certs) == 0 {
 		fmt.Println("No codesigning certificates found.")
 		fixSigningError()
