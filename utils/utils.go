@@ -1,8 +1,8 @@
-package main
+package utils
 
 import "fmt"
 
-func contains(slice []string, item string) bool {
+func Contains(slice []string, item string) bool {
 	for _, element := range slice {
 		if element == item {
 			return true
@@ -11,14 +11,14 @@ func contains(slice []string, item string) bool {
 	return false
 }
 
-func plural(count int) string {
+func Plural(count int) string {
 	if count == 1 {
 		return ""
 	}
 	return "s"
 }
 
-func askForConfirmation(s string) bool {
+func AskForConfirmation(s string) bool {
 	var response string
 	for {
 		fmt.Printf("%s [y/n]: ", s)

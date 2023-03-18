@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 )
 
 // Function that executes a process with given arguments
-func executeProcess(args []string) ([]byte, int, error) {
+func ExecuteProcess(args []string) ([]byte, int, error) {
 	if len(args) == 0 {
 		return nil, -1, fmt.Errorf("executeProcess: no program given")
 	}

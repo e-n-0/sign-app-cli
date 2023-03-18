@@ -1,4 +1,4 @@
-package main
+package codesigning
 
 import (
 	"fmt"
@@ -7,11 +7,13 @@ import (
 	"os"
 	"sort"
 	"strings"
+
+	"github.com/e-n-0/sign-app-cli/utils"
 )
 
 func getCodesigningCerts() ([]string, error) {
 	var output []string
-	bytes, status, err := executeProcess([]string{"/usr/bin/security", "find-identity", "-v", "-p", "codesigning"})
+	bytes, status, err := utils.ExecuteProcess([]string{"/usr/bin/security", "find-identity", "-v", "-p", "codesigning"})
 	if err != nil || status != 0 {
 		return output, err
 	}
@@ -34,7 +36,7 @@ func printCodesigningCerts(certs []string) {
 		return
 	}
 
-	fmt.Println("Found", len(certs), "codesigning certificate"+(plural(len(certs)))+":")
+	fmt.Println("Found", len(certs), "codesigning certificate"+(utils.Plural(len(certs)))+":")
 	for _, cert := range certs {
 		fmt.Println("  ", cert)
 	}
@@ -50,7 +52,7 @@ func fixSigningError() {
 		// Print in yellow
 		fmt.Println("\033[33m", "An issue has been detected with your codesigning certificates.", "\033[0m")
 		fmt.Println("\033[33m", "Do you want to try to fix this issue by installing the Apple Worldwide Developer Relations Certification Authority certificate?", "\033[0m")
-		if askForConfirmation("Do you want to install the certificate now?") {
+		if utils.AskForConfirmation("Do you want to install the certificate now?") {
 			fixSigningError()
 		}
 
@@ -85,7 +87,7 @@ func downloadFile(url string, filename string) (string, error) {
 
 func checkAppleCertInstalled() (bool, error) {
 	// Check if the certificate is installed
-	_, status, err := executeProcess([]string{"/usr/bin/security", "find-certificate", "-c", "Apple Worldwide Developer Relations Certification Authority", "-a"})
+	_, status, err := utils.ExecuteProcess([]string{"/usr/bin/security", "find-certificate", "-c", "Apple Worldwide Developer Relations Certification Authority", "-a"})
 	if err != nil || status != 0 {
 		return false, err
 	}
@@ -102,7 +104,7 @@ func installAppleCert() error {
 	}
 
 	// Install the certificate
-	_, status, err := executeProcess([]string{"sudo", "/usr/bin/security", "add-trusted-cert", "-d", "-r", "trustRoot", "-k", "/Library/Keychains/System.keychain", filePathTemp})
+	_, status, err := utils.ExecuteProcess([]string{"sudo", "/usr/bin/security", "add-trusted-cert", "-d", "-r", "trustRoot", "-k", "/Library/Keychains/System.keychain", filePathTemp})
 	if err != nil || status != 0 {
 		return err
 	}

@@ -1,4 +1,4 @@
-package main
+package utils
 
 import "fmt"
 
@@ -6,13 +6,13 @@ import "fmt"
 func checkXcodeTools() bool {
 
 	// Check xcode-select
-	_, status, err := executeProcess([]string{"xcode-select", "-p"})
+	_, status, err := ExecuteProcess([]string{"xcode-select", "-p"})
 	if err != nil || status != 0 {
 		return false
 	}
 
 	// Check pkgutil
-	_, status, err = executeProcess([]string{"pkgutil", "--pkg-info=com.apple.pkg.DeveloperToolsCLI"})
+	_, status, err = ExecuteProcess([]string{"pkgutil", "--pkg-info=com.apple.pkg.DeveloperToolsCLI"})
 	if err != nil || status != 0 {
 		return false
 	}
@@ -21,19 +21,19 @@ func checkXcodeTools() bool {
 }
 
 func installXcodeTools() error {
-	_, status, err := executeProcess([]string{"xcode-select", "--install"})
+	_, status, err := ExecuteProcess([]string{"xcode-select", "--install"})
 	if err != nil || status != 0 {
 		return err
 	}
 	return nil
 }
 
-func manageXcodeTools() error {
+func ManageXcodeTools() error {
 	if !checkXcodeTools() {
 		fmt.Println("Xcode CLI tools are not installed.")
 
 		// Ask the user if he wants to install the tools
-		if askForConfirmation("Do you want to install them now?") {
+		if AskForConfirmation("Do you want to install them now?") {
 			if err := installXcodeTools(); err != nil {
 				return err
 			}

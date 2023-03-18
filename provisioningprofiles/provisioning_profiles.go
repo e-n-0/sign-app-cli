@@ -1,4 +1,4 @@
-package main
+package provisioningprofiles
 
 import (
 	"fmt"
@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/e-n-0/sign-app-cli/utils"
 	"howett.net/plist"
 )
 
@@ -28,13 +29,13 @@ func sortProfilesByCreationDateAndName(profiles []ProvisioningProfile) {
 	})
 }
 
-func printProfiles(profiles []ProvisioningProfile) {
+func PrintProfiles(profiles []ProvisioningProfile) {
 	if len(profiles) == 0 {
 		fmt.Println("No provisioning profiles found")
 		return
 	}
 
-	fmt.Println("Found", len(profiles), "provisioning profile"+(plural(len(profiles)))+":")
+	fmt.Println("Found", len(profiles), "provisioning profile"+(utils.Plural(len(profiles)))+":")
 	for _, profile := range profiles {
 		fmt.Printf("  %s (%s)", profile.Name, profile.TeamID)
 
@@ -48,7 +49,7 @@ func printProfiles(profiles []ProvisioningProfile) {
 }
 
 // Convert the swift code to Go code
-func getProfiles() []ProvisioningProfile {
+func GetProfiles() []ProvisioningProfile {
 	var output []ProvisioningProfile
 
 	// Get Provisioning Profiles from the file system
@@ -59,7 +60,7 @@ func getProfiles() []ProvisioningProfile {
 			for _, file := range files {
 				if filepath.Ext(file.Name()) == ".mobileprovision" {
 					profileFilename := filepath.Join(provisioningProfilesPath, file.Name())
-					profile, err := CreateProvisioningProfile(profileFilename)
+					profile, err := createProvisioningProfile(profileFilename)
 					if err != nil {
 						fmt.Println(err)
 					} else {
@@ -77,7 +78,7 @@ func getProfiles() []ProvisioningProfile {
 	var newProfiles []ProvisioningProfile
 	var names []string
 	for _, profile := range output {
-		if !contains(names, profile.Name+profile.AppID) {
+		if !utils.Contains(names, profile.Name+profile.AppID) {
 			newProfiles = append(newProfiles, profile)
 			names = append(names, profile.Name+profile.AppID)
 		}
@@ -86,7 +87,7 @@ func getProfiles() []ProvisioningProfile {
 	return newProfiles
 }
 
-type MobileProvision struct {
+type mobileProvision struct {
 	ExpirationDate time.Time              `xml:"ExpirationDate"`
 	CreationDate   time.Time              `xml:"CreationDate"`
 	Name           string                 `xml:"Name"`
@@ -94,7 +95,7 @@ type MobileProvision struct {
 	_              map[string]interface{} `xml:",any"`
 }
 
-func CreateProvisioningProfile(filename string) (ProvisioningProfile, error) {
+func createProvisioningProfile(filename string) (ProvisioningProfile, error) {
 	var provisioningProfile ProvisioningProfile
 	fmt.Println("Creating provisioning profile from file: " + filename)
 
@@ -102,7 +103,7 @@ func CreateProvisioningProfile(filename string) (ProvisioningProfile, error) {
 	securityArgs := []string{"/usr/bin/security", "cms", "-D", "-i", filename}
 
 	// Execute the security command
-	bytes, status, err := executeProcess(securityArgs)
+	bytes, status, err := utils.ExecuteProcess(securityArgs)
 	if err != nil {
 		return ProvisioningProfile{}, err
 	}
@@ -118,7 +119,7 @@ func CreateProvisioningProfile(filename string) (ProvisioningProfile, error) {
 		rawXML := string(output)[xmlIndex:]
 
 		// Parse the plist
-		var mobileProvision MobileProvision
+		var mobileProvision mobileProvision
 		_, err := plist.Unmarshal([]byte(rawXML), &mobileProvision)
 		if err != nil {
 			return ProvisioningProfile{}, err
@@ -140,11 +141,11 @@ func CreateProvisioningProfile(filename string) (ProvisioningProfile, error) {
 	return provisioningProfile, nil
 }
 
-func (profile ProvisioningProfile) removeGetTaskAllow() {
+func (profile ProvisioningProfile) RemoveGetTaskAllow() {
 	delete(profile.Entitlements, "get-task-allow")
 }
 
-func (profile ProvisioningProfile) update(trueAppID string) {
+func (profile ProvisioningProfile) Update(trueAppID string) {
 	if _, ok := profile.Entitlements["application-identifier"].(string); ok {
 		newIdentifier := profile.TeamID + "." + trueAppID
 		profile.Entitlements["application-identifier"] = newIdentifier
