@@ -97,7 +97,6 @@ type mobileProvision struct {
 
 func createProvisioningProfile(filename string) (ProvisioningProfile, error) {
 	var provisioningProfile ProvisioningProfile
-	fmt.Println("Creating provisioning profile from file: " + filename)
 
 	// Create the security command
 	securityArgs := []string{"/usr/bin/security", "cms", "-D", "-i", filename}
