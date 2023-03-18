@@ -1,25 +1,11 @@
+/*
+Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+
+*/
 package main
 
-import (
-	"fmt"
-	"os"
-	"runtime"
-)
+import "github.com/e-n-0/sign-app-cli/cmd"
 
 func main() {
-	// Run this program only on Macos or iOS (darwin architecture)
-	if runtime.GOOS != "darwin" && runtime.GOOS != "ios" {
-		fmt.Println("This program only runs on Macos or iOS (darwin architecture).")
-
-		// exit the program with error code 1
-		os.Exit(1)
-	}
-
-	profiles := getProfiles()
-
-	// print how many items
-	printProfiles(profiles)
-
-	cs, _ := getCodesigningCerts()
-	printCodesigningCerts(cs)
+	cmd.Execute()
 }
