@@ -13,7 +13,6 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "sign-app-cli",
 	Short: "Sign your iOS/Macos app from command line",
-	Long:  `TODO`,
 }
 
 func Execute() {
@@ -24,6 +23,5 @@ func Execute() {
 }
 
 func init() {
-
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.CompletionOptions.DisableDefaultCmd = true
 }
