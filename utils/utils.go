@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 )
 
 func Contains(slice []string, item string) bool {
@@ -12,6 +13,11 @@ func Contains(slice []string, item string) bool {
 		}
 	}
 	return false
+}
+
+func FileExists(path string) bool {
+	_, err := os.Stat(path)
+	return !os.IsNotExist(err)
 }
 
 func Plural(count int) string {
@@ -57,4 +63,19 @@ func StringInSlice(a string, list []string) bool {
 		}
 	}
 	return false
+}
+
+func IsFolder(path string) bool {
+	fileInfo, err := os.Open(path)
+	if err != nil {
+		return false
+	}
+	defer fileInfo.Close()
+
+	fileMode, err := fileInfo.Stat()
+	if err != nil {
+		return false
+	}
+
+	return fileMode.IsDir()
 }

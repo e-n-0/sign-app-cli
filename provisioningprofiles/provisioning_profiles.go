@@ -71,7 +71,7 @@ func GetProfiles() []ProvisioningProfile {
 			for _, file := range files {
 				if filepath.Ext(file.Name()) == ".mobileprovision" {
 					profileFilename := filepath.Join(provisioningProfilesPath, file.Name())
-					profile, err := createProvisioningProfile(profileFilename)
+					profile, err := CreateProvisioningProfile(profileFilename)
 					if err != nil {
 						fmt.Println(err)
 					} else {
@@ -107,7 +107,7 @@ type mobileProvision struct {
 	_              map[string]interface{} `xml:",any"`
 }
 
-func createProvisioningProfile(filename string) (ProvisioningProfile, error) {
+func CreateProvisioningProfile(filename string) (ProvisioningProfile, error) {
 	var provisioningProfile ProvisioningProfile
 
 	// Execute the security command
@@ -158,4 +158,8 @@ func (profile ProvisioningProfile) Update(trueAppID string) {
 		newIdentifier := profile.TeamID + "." + trueAppID
 		profile.Entitlements["application-identifier"] = newIdentifier
 	}
+}
+
+func (profile ProvisioningProfile) GetEntitlements() map[string]interface{} {
+	return profile.Entitlements
 }
