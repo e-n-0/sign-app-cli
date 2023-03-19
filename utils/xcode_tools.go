@@ -6,13 +6,13 @@ import "fmt"
 func checkXcodeTools() bool {
 
 	// Check xcode-select
-	_, status, err := ExecuteProcess([]string{"xcode-select", "-p"})
+	_, status, err := ExecuteProcess("xcode-select", "-p")
 	if err != nil || status != 0 {
 		return false
 	}
 
 	// Check pkgutil
-	_, status, err = ExecuteProcess([]string{"pkgutil", "--pkg-info=com.apple.pkg.DeveloperToolsCLI"})
+	_, status, err = ExecuteProcess("pkgutil", "--pkg-info=com.apple.pkg.DeveloperToolsCLI")
 	if err != nil || status != 0 {
 		return false
 	}
@@ -21,8 +21,12 @@ func checkXcodeTools() bool {
 }
 
 func installXcodeTools() error {
-	_, status, err := ExecuteProcess([]string{"xcode-select", "--install"})
+	_, status, err := ExecuteProcess("xcode-select", "--install")
 	if err != nil || status != 0 {
+		if err == nil {
+			err = fmt.Errorf("failed to install Xcode CLI tools")
+		}
+
 		return err
 	}
 	return nil

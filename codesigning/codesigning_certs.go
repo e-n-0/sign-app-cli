@@ -11,10 +11,29 @@ import (
 	"github.com/e-n-0/sign-app-cli/utils"
 )
 
+func GetCodesigningCert(name string) (string, error) {
+	certs, err := GetCodesigningCerts()
+	if err != nil {
+		return "", err
+	}
+
+	for _, cert := range certs {
+		if strings.Contains(cert, name) {
+			return cert, nil
+		}
+	}
+
+	return "", fmt.Errorf("failed to find codesigning certificate with name: %s", name)
+}
+
 func GetCodesigningCerts() ([]string, error) {
 	var output []string
-	bytes, status, err := utils.ExecuteProcess([]string{"/usr/bin/security", "find-identity", "-v", "-p", "codesigning"})
+	bytes, status, err := utils.ExecuteProcess("/usr/bin/security", "find-identity", "-v", "-p", "codesigning")
 	if err != nil || status != 0 {
+		if err == nil {
+			err = fmt.Errorf("failed to get codesigning certificates")
+		}
+
 		return output, err
 	}
 
@@ -32,7 +51,7 @@ func GetCodesigningCerts() ([]string, error) {
 func PrintCodesigningCerts(certs []string) {
 	if len(certs) == 0 {
 		fmt.Println("No codesigning certificates found.")
-		fixSigningError()
+		FixSigningError()
 		return
 	}
 
@@ -45,7 +64,7 @@ func PrintCodesigningCerts(certs []string) {
 // if there is no codesign certificates available on the system
 // it might be the cause of missing "Apple Worldwide Developer Relations Certification Authority" certificate
 // this certificate can be installed from https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer
-func fixSigningError() {
+func FixSigningError() {
 	if installed, err := checkAppleCertInstalled(); err != nil {
 		fmt.Println("Failed to check if Apple Worldwide Developer Relations Certification Authority certificate is installed:", err)
 	} else if !installed {
@@ -53,7 +72,7 @@ func fixSigningError() {
 		fmt.Println("\033[33m", "An issue has been detected with your codesigning certificates.", "\033[0m")
 		fmt.Println("\033[33m", "Do you want to try to fix this issue by installing the Apple Worldwide Developer Relations Certification Authority certificate?", "\033[0m")
 		if utils.AskForConfirmation("Do you want to install the certificate now?") {
-			fixSigningError()
+			installAppleCert()
 		}
 
 		fmt.Println("Please try to run this command again to list your codesigning certificates.")
@@ -87,8 +106,12 @@ func downloadFile(url string, filename string) (string, error) {
 
 func checkAppleCertInstalled() (bool, error) {
 	// Check if the certificate is installed
-	_, status, err := utils.ExecuteProcess([]string{"/usr/bin/security", "find-certificate", "-c", "Apple Worldwide Developer Relations Certification Authority", "-a"})
+	_, status, err := utils.ExecuteProcess("/usr/bin/security", "find-certificate", "-c", "Apple Worldwide Developer Relations Certification Authority", "-a")
 	if err != nil || status != 0 {
+		if err == nil {
+			err = fmt.Errorf("failed to check if Apple certificate is installed")
+		}
+
 		return false, err
 	}
 
@@ -104,8 +127,12 @@ func installAppleCert() error {
 	}
 
 	// Install the certificate
-	_, status, err := utils.ExecuteProcess([]string{"sudo", "/usr/bin/security", "add-trusted-cert", "-d", "-r", "trustRoot", "-k", "/Library/Keychains/System.keychain", filePathTemp})
+	_, status, err := utils.ExecuteProcess("sudo", "/usr/bin/security", "add-trusted-cert", "-d", "-r", "trustRoot", "-k", "/Library/Keychains/System.keychain", filePathTemp)
 	if err != nil || status != 0 {
+		if err == nil {
+			err = fmt.Errorf("failed to install Apple certificate to System.keychain")
+		}
+
 		return err
 	}
 

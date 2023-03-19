@@ -21,6 +21,7 @@ type ProvisioningProfile struct {
 	AppID        string
 	TeamID       string
 	Entitlements map[string]interface{}
+	Path         string
 }
 
 func sortProfilesByCreationDateAndName(profiles []ProvisioningProfile) {
@@ -48,6 +49,16 @@ func PrintProfiles(profiles []ProvisioningProfile) {
 	}
 }
 
+func GetProfile(name string) (ProvisioningProfile, error) {
+	profiles := GetProfiles()
+	for _, profile := range profiles {
+		if fmt.Sprintf("%s (%s)", profile.Name, profile.TeamID) == name {
+			return profile, nil
+		}
+	}
+	return ProvisioningProfile{}, fmt.Errorf("failed to find provisioning profile with name: %s", name)
+}
+
 // Convert the swift code to Go code
 func GetProfiles() []ProvisioningProfile {
 	var output []ProvisioningProfile
@@ -64,6 +75,7 @@ func GetProfiles() []ProvisioningProfile {
 					if err != nil {
 						fmt.Println(err)
 					} else {
+						profile.Path = filepath.Join(provisioningProfilesPath, file.Name())
 						output = append(output, profile)
 					}
 				}
@@ -98,11 +110,8 @@ type mobileProvision struct {
 func createProvisioningProfile(filename string) (ProvisioningProfile, error) {
 	var provisioningProfile ProvisioningProfile
 
-	// Create the security command
-	securityArgs := []string{"/usr/bin/security", "cms", "-D", "-i", filename}
-
 	// Execute the security command
-	bytes, status, err := utils.ExecuteProcess(securityArgs)
+	bytes, status, err := utils.ExecuteProcess("/usr/bin/security", "cms", "-D", "-i", filename)
 	if err != nil {
 		return ProvisioningProfile{}, err
 	}
