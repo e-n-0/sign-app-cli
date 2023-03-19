@@ -113,8 +113,6 @@ func init() {
 	signCmd.MarkFlagRequired("certificate")
 	signCmd.MarkFlagRequired("input")
 	signCmd.MarkFlagRequired("output")
-	//signCmd.MarkFlagRequired("profile")
-	//signCmd.MarkFlagRequired("profilePath")
 
 	signCmd.MarkFlagsMutuallyExclusive("profile", "profilePath")
 }
