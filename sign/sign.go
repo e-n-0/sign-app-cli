@@ -77,7 +77,7 @@ func Sign(params SignerParams) error {
 
 	// Create a folder "work" inside the tmp folder
 	workingTmpFolder := filepath.Join(tmpFolder, "work")
-	err = os.Mkdir(workingTmpFolder, 0755)
+	err = os.Mkdir(workingTmpFolder, 0777)
 	if err != nil {
 		return err
 	}
@@ -88,7 +88,7 @@ func Sign(params SignerParams) error {
 		fmt.Println("Extracting ipa file...")
 		err = utils.ExtractZip(params.InputFile, workingTmpFolder)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to extract ipa file, error: %s", err)
 		}
 
 		// Get the Payload folder
@@ -111,7 +111,7 @@ func Sign(params SignerParams) error {
 		params.EntitlementsFile = filepath.Join(workingTmpFolder, "entitlements.plist")
 		entitlementsFile, err := os.Create(params.EntitlementsFile)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to create entitlements file, error: %s", err)
 		}
 
 		// Encode the entitlements to xml
@@ -119,7 +119,7 @@ func Sign(params SignerParams) error {
 		encoder.Indent("\t")
 		err = encoder.Encode(entitlements)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to encode entitlements, error: %s", err)
 		}
 
 		entitlementsFile.Close()
@@ -129,13 +129,13 @@ func Sign(params SignerParams) error {
 		fmt.Println("Signing the app folder...")
 		err = signPath(appFolder, params)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to sign the app folder, error: %s", err)
 		}
 
 		// Zip the Payload folder and save it to the output file
 		err = utils.CreateZip(params.OutputFile, payloadFolder)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to create the output ipa file, error: %s", err)
 		}
 
 		// Print in green
